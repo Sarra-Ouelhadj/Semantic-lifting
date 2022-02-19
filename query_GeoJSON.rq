@@ -1,0 +1,30 @@
+PREFIX iter: <http://w3id.org/sparql-generate/iter/>
+PREFIX fun: <http://w3id.org/sparql-generate/fn/>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+
+GENERATE {
+    ?Commune a <http://data.grandlyon.com/ontology/Commune> ;
+        <http://schema.org/name> ?nom;
+<http://www.w3.org/2000/01/rdf-schema#label> ?libofficiel;
+<http://data.grandlyon.com/ontology/Commune#nomReduit> ?nomreduit;
+<http://rdf.insee.fr/def/geo#codeINSEE> ?insee;
+<http://data.grandlyon.com/ontology/Commune#trigramme> ?trigramme;
+<http://purl.org/dc/terms/modified> ?datemajalpha;
+
+    <http://www.opengis.net/ont/geosparql#asWKT> ?geometricCoordinates .
+}
+    SOURCE <https://download.data.grandlyon.com/wfs/grandlyon?SERVICE=WFS&VERSION=2.0.0&request=GetFeature&typename=adr_voie_lieu.adrcomgl&outputFormat=application/json;%20subtype=geojson&SRSNAME=EPSG:4171> AS ?source
+    ITERATOR iter:GeoJSON(?source) AS ?geometricCoordinates ?properties
+    
+    WHERE {
+        BIND(IRI(CONCAT("http://data.grandlyon.com/id/commune/",fun:JSONPath(?properties,"$.insee"))) AS ?Commune)
+        BIND (fun:JSONPath(?properties,"$.nom") AS ?nom)
+BIND (fun:JSONPath(?properties,"$.libofficiel") AS ?libofficiel)
+BIND (fun:JSONPath(?properties,"$.nomreduit") AS ?nomreduit)
+BIND (fun:JSONPath(?properties,"$.insee") AS ?insee)
+BIND (fun:JSONPath(?properties,"$.trigramme") AS ?trigramme)
+BIND (fun:JSONPath(?properties,"$.datemajalpha") AS ?datemajalpha)
+
+
+    }
