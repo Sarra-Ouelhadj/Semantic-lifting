@@ -1,5 +1,6 @@
 import pyexcel as p
 from unidecode import unidecode
+import os
 
 def convertToCamelcase(words):
     '''(list) -> string
@@ -68,18 +69,18 @@ template_ontology = """@prefix owl: <http://www.w3.org/2002/07/owl#> .
 {objectProperties_part}
 
 """
-#Open the mapping file
-book = p.get_book_dict(file_name="/home/sarra/Documents/Doctorat/Python/communeScript/Ontology/input_MAJ.ods",start_row=1)
+#Open the template file
+book = p.get_book_dict(file_name="/home/sarra/Documents/Doctorat/Python/communeScript/New/Semantic-lifting/input.ods")
 
 #What do I need to create the SPARQL-Generate request file
 dataset_link = "https://download.data.grandlyon.com/wfs/grandlyon?SERVICE=WFS&VERSION=2.0.0&request=GetFeature&typename=adr_voie_lieu.adrcomgl&outputFormat=application/json;%20subtype=geojson&SRSNAME=EPSG:4171"
 bind_line="""BIND (fun:JSONPath(?properties,"$.{column_source}") AS ?{column_source})"""
-generated_class_variable = book["Classes"][0][0]
+generated_class_variable = book["Classes"][1][0]
 class_instance_base_link = "http://data.grandlyon.com/id/commune/"
-class_definition=book["Classes"][0][1]
+class_definition=book["Classes"][1][1]
 body_part1=""
 body_part2=""
-class_type = book["Classes"][0][2]
+class_type = book["Classes"][1][2]
 
 #What do I need to create the ontology file
 ontology_namespace = "http://data.grandlyon.com/ontology/"
@@ -94,12 +95,12 @@ if class_type=="" :
     #ontology classes
     classes_part=classes_part+"<"+class_type +"> rdf:type owl:Class ;\n rdfs:label \""+ generated_class_variable +"\" ;\n rdfs:comment \""+class_definition + "\" .\n"
 
-for class_attribut_ref_link in book["Attributes"]:
+for class_attribut_ref_link in book["Attributes"][1:]:
     if class_attribut_ref_link[3]=="": 
         class_attribut_ref_link[3]= class_type+"#"+convertToCamelcase(unidecode(class_attribut_ref_link[1]).split())
         #ontology data properties
         dataProperties_part=dataProperties_part + "<"+class_attribut_ref_link[3]+"> rdf:type owl:DatatypeProperty ;\n rdfs:label \""+class_attribut_ref_link[1]+"\" ;\n rdfs:comment \""+ class_attribut_ref_link[2]+"\" .\n"
-    
+
     body_part1 =body_part1+"<"+class_attribut_ref_link[3] +">"+ " ?" +class_attribut_ref_link[4]+";\n"      
     #URI minting strategy
     if class_attribut_ref_link[5]=="yes": class_instance_identifier=class_attribut_ref_link[4]
@@ -109,7 +110,8 @@ for class_attribut_ref_link in book["Attributes"]:
 template_GeoJSON=template_GeoJSON.format(generated_class_variable=generated_class_variable,class_type= class_type,body_part1=body_part1,dataset_link=dataset_link,class_instance_base_link=class_instance_base_link,class_instance_identifier=class_instance_identifier,body_part2=body_part2)        
 template_ontology=template_ontology.format(ontology_namespace=ontology_namespace,classes_part=classes_part,dataProperties_part=dataProperties_part,objectProperties_part=objectProperties_part)
 
-with open("/home/sarra/Documents/Doctorat/Python/communeScript/Ontology/query_GeoJSON.rq","w") as fichier_out1, open("/home/sarra/Documents/Doctorat/Python/communeScript/Ontology/ontology.ttl","w") as fichier_out2 :
+with open("/home/sarra/Documents/Doctorat/Python/communeScript/New/Semantic-lifting/query_GeoJSON.rq","w") as fichier_out1, open("/home/sarra/Documents/Doctorat/Python/communeScript/New/Semantic-lifting/ontology.ttl","w") as fichier_out2 :
     fichier_out1.write(template_GeoJSON)
     fichier_out2.write(template_ontology)
 
+#os.system('java -jar /home/sarra/Documents/Doctorat/Python/communeScript/New/Semantic-lifting/sparql-generate-2.0.9.jar --query-file /home/sarra/Documents/Doctorat/Python/communeScript/New/Semantic-lifting/query_GeoJSON.rq --output /home/sarra/Documents/Doctorat/Python/communeScript/New/Semantic-lifting/test/results.ttl')
