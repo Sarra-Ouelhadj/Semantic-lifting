@@ -5,7 +5,7 @@ dataset_link = "https://download.data.grandlyon.com/wfs/grandlyon?SERVICE=WFS&VE
 class_instance_base_link = "https://data.grandlyon.com/id/commune/"
 file_name="/home/sarra/Documents/Doctorat/Python/communeScript/New/Semantic-lifting/input.ods"
 ontology_namespace = "https://data.grandlyon.com/ontology/"
-path="/home/sarra/Documents/Doctorat/Python/communeScript/New/Semantic-lifting/test"
+path="/home/sarra/Documents/Doctorat/Python/communeScript/New/Semantic-lifting/test/"
 
 lib.createGeoJSONQueryForSPARQLGenerate(dataset_link,class_instance_base_link,file_name, path, ontology_namespace)
 
